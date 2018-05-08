@@ -23,10 +23,14 @@ def fetchSQL(sql):
 
 def getDevices():
     fb = fc.FritzHosts(password='losen9842')
-    message = "Connected Devices:"
+    message = "Connected devices:"
     for device in fb.get_hosts_info():
         if device['status'] == "1":
-            message = message + "\n" + device['name']
+
+            ip = device['ip']
+            if (ip == None): ip = "None"
+
+            message = message + '\n{} ({})'.format(device['name'], ip)
     return message
 
 def saveCommand(user, command):
@@ -45,7 +49,7 @@ def handle(msg):
     elif command == '/home':
         if chat_id == 467561553 or chat_id == 432535063:
             bot.sendMessage(chat_id, "This takes a second.")
-            bot.sendMessage(chat_id, getDevices())
+            bot.sendMessage(chat_id=chat_id, text=getDevices(), parse_mode='markdown')
     elif command == '/log':
         if chat_id == 467561553 or chat_id == 432535063:
             lastten = list(fetchSQL("SELECT * from status ORDER BY datetime DESC limit 10"))
@@ -67,7 +71,9 @@ db.close()
 bot = telepot.Bot('583575964:AAGOrOmzpfmblckwEJH9x3CoifdcQCRhFPI')
 
 MessageLoop(bot, handle).run_as_thread()
-#print('Listening ...')
+print('********************************************')
+print('* Who_is_at_home_bot erfolgreich gestartet *')
+print('********************************************')
 
 
 while 1:
