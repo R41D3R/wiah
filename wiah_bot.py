@@ -11,6 +11,15 @@ def executeSQL(sql, data):
     db.commit()
     db.close()
 
+def fetchSQL(sql):
+    db = sqlite3.connect('fritzbox.db')
+    cursor = db.cursor()
+    cursor.execute(sql)
+    fetched = cursor.fetchall()
+    db.commit()
+    db.close()
+    return fetched
+
 
 def getDevices():
     fb = fc.FritzHosts(password='losen9842')
@@ -29,14 +38,21 @@ def handle(msg):
     #print('Got command {} from user {}'.format(command, chat_id))
     saveCommand(chat_id, command)
     if command == "/help":
-        bot.sendMessage(chat_id, "/home - get a list of Devices")
+        bot.sendMessage(chat_id, "/home - get a list of Devices\n/log - get the last 10 evnets")
     elif command == '/start':
-        bot.sendMessage(chat_id, "Hello, this is the who_is_at_home_bot.\nCommands are:\n/help - get a list of Commands\n/home - get a list of devices")
+        bot.sendMessage(chat_id, "Hello, this is the who_is_at_home_bot.\nCommands are:\n/help - get a list of Commands\n/home - get a list of devices\n/log - get the last 10 evnets")
 
     elif command == '/home':
-        if chat_id == 467561553:
+        if chat_id == 467561553 or chat_id == 432535063:
             bot.sendMessage(chat_id, "This takes a second.")
             bot.sendMessage(chat_id, getDevices())
+    elif command == '/log':
+        if chat_id == 467561553 or chat_id == 432535063:
+            lastten = list(fetchSQL("SELECT * from status ORDER BY datetime DESC limit 10"))
+            formatted_message = "Last 10 Changes:"
+            for i in lastten:
+                formatted_message = formatted_message + "\n" + i[0] + " changed " + i[1] + " to " + i[2]
+            bot.sendMessage(chat_id, formatted_message)
     else:
         bot.sendMessage(chat_id, "The Command : {} is unknown.".format(command))
 
