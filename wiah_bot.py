@@ -11,6 +11,7 @@ def executeSQL(sql, data):
     db.commit()
     db.close()
 
+
 def fetchSQL(sql):
     db = sqlite3.connect('fritzbox.db')
     cursor = db.cursor()
@@ -22,7 +23,7 @@ def fetchSQL(sql):
 
 
 def getDevices():
-    fb = fc.FritzHosts(password='losen9842')
+    fb = fc.FritzHosts( password = fritzpw )
     message = "Connected devices:"
     for device in fb.get_hosts_info():
         if device['status'] == "1":
@@ -33,8 +34,10 @@ def getDevices():
             message = message + '\n{} ({})'.format(device['name'], ip)
     return message
 
+
 def saveCommand(user, command):
     executeSQL("INSERT INTO commands(user, time, command) VALUES (?,?,?)", (user, str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), command))
+
 
 def handle(msg):
     chat_id = msg['chat']['id']
@@ -47,11 +50,12 @@ def handle(msg):
         bot.sendMessage(chat_id, "Hello, this is the who_is_at_home_bot.\nCommands are:\n/help - get a list of Commands\n/home - get a list of devices\n/log - get the last 10 evnets")
 
     elif command == '/home':
-        if chat_id == 467561553 or chat_id == 432535063:
+        print("home recieved")
+        if str(chat_id) in authusers_list:
             bot.sendMessage(chat_id, "This takes a second.")
             bot.sendMessage(chat_id=chat_id, text=getDevices(), parse_mode='markdown')
     elif command == '/log':
-        if chat_id == 467561553 or chat_id == 432535063:
+        if str(chat_id) in authusers_list:
             lastten = list(fetchSQL("SELECT * from status ORDER BY datetime DESC limit 10"))
             formatted_message = "Last 10 Changes:"
             for i in lastten:
@@ -67,8 +71,21 @@ cursor.execute("CREATE TABLE IF NOT EXISTS commands (user text, time text, comma
 db.commit()
 db.close()
 
+botkey_file = open("botkey.txt")
+botkey = botkey_file.read()
+print(botkey)
+bot = telepot.Bot(botkey)
 
-bot = telepot.Bot('583575964:AAGOrOmzpfmblckwEJH9x3CoifdcQCRhFPI')
+
+authusers = open("users.txt")
+authusers_list = authusers.read().splitlines()
+print(len(authusers_list))
+print(authusers_list[1])
+print(authusers_list[0])
+
+fritzbox_pw_file = open("fritzbox_pw.txt")
+fritzpw = fritzbox_pw_file.read()
+print(fritzpw)
 
 MessageLoop(bot, handle).run_as_thread()
 print('********************************************')
