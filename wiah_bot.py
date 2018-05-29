@@ -23,7 +23,7 @@ def fetchSQL(sql):
 
 
 def getDevices():
-    fb = fc.FritzHosts( password = fritzpw )
+    fb = fc.FritzHosts( password = str(fritzpw) )
     message = "Connected devices:"
     for device in fb.get_hosts_info():
         if device['status'] == "1":
@@ -87,7 +87,9 @@ fritzbox_pw_file = open("fritzbox_pw.txt")
 fritzpw = fritzbox_pw_file.read()
 print(fritzpw)
 
-MessageLoop(bot, handle).run_as_thread()
+bot.message_loop(handle)
+
+#MessageLoop(bot, handle)
 print('********************************************')
 print('* Who_is_at_home_bot erfolgreich gestartet *')
 print('********************************************')
